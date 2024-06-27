@@ -1,4 +1,4 @@
-package practica2;
+package edu.ucam;
 
 public class ConfiguracionIMAP {
 
