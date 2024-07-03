@@ -8,6 +8,8 @@ import java.rmi.Naming;
 import java.rmi.registry.LocateRegistry;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
+import java.io.*;
+import java.util.*;
 
 public class ServidorIMAP {
 
@@ -138,6 +140,129 @@ public class ServidorIMAP {
                 System.out.println(response);
             }
 
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void crearCarpeta(String nombreCarpeta) {
+        try {
+            writer.write("A7 CREATE " + nombreCarpeta + "\r\n");
+            writer.flush();
+            String response;
+            while (!(response = reader.readLine()).startsWith("A7 OK")) {
+                System.out.println(response);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void eliminarCarpeta(String nombreCarpeta) {
+        try {
+            writer.write("A8 DELETE " + nombreCarpeta + "\r\n");
+            writer.flush();
+            String response;
+            while (!(response = reader.readLine()).startsWith("A8 OK")) {
+                System.out.println(response);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void listarCorreosCarpeta(String nombreCarpeta) {
+        try {
+            writer.write("A9 SELECT " + nombreCarpeta + "\r\n");
+            writer.flush();
+            String response;
+            while (!(response = reader.readLine()).startsWith("A9 OK")) {
+                System.out.println(response);
+            }
+            writer.write("A10 FETCH 1:* (BODY[HEADER.FIELDS (SUBJECT DATE FROM)])\r\n");
+            writer.flush();
+            while (!(response = reader.readLine()).startsWith("A10 OK")) {
+                System.out.println(response);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void moverMensaje(String origenCarpeta, String destinoCarpeta, int numMensaje) {
+        try {
+            writer.write("A11 SELECT " + origenCarpeta + "\r\n");
+            writer.flush();
+            String response;
+            while (!(response = reader.readLine()).startsWith("A11 OK")) {
+                System.out.println(response);
+            }
+
+            writer.write("A12 COPY " + numMensaje + " " + destinoCarpeta + "\r\n");
+            writer.flush();
+            while (!(response = reader.readLine()).startsWith("A12 OK")) {
+                System.out.println(response);
+            }
+
+            writer.write("A13 STORE " + numMensaje + " +FLAGS \\Deleted\r\n");
+            writer.flush();
+            while (!(response = reader.readLine()).startsWith("A13 OK")) {
+                System.out.println(response);
+            }
+
+            writer.write("A14 EXPUNGE\r\n");
+            writer.flush();
+            while (!(response = reader.readLine()).startsWith("A14 OK")) {
+                System.out.println(response);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void descargarAdjuntosPDF(int numMensaje, String rutaDestino) {
+        try {
+            writer.write("A2 SELECT INBOX\r\n");
+            writer.flush();
+            String response;
+            while (!(response = reader.readLine()).startsWith("A2 OK")) {
+                System.out.println(response);
+            }
+
+            writer.write("A3 FETCH " + numMensaje + " BODY[]\r\n");
+            writer.flush();
+            List<String> responseLines = new ArrayList<>();
+            while (!(response = reader.readLine()).startsWith("A3 OK")) {
+                responseLines.add(response);
+            }
+
+            boolean isAttachment = false;
+            StringBuilder base64Content = new StringBuilder();
+            for (String line : responseLines) {
+                if (line.contains("Content-Type: application/pdf")) {
+                    isAttachment = true;
+                }
+                if (isAttachment) {
+                    if (line.contains("Content-Transfer-Encoding: base64")) {
+                        continue;
+                    }
+                    if (line.startsWith("Content-Disposition: attachment")) {
+                        continue;
+                    }
+                    if (line.contains("--")) {
+                        break;
+                    }
+                    base64Content.append(line.trim());
+                }
+            }
+
+            byte[] decodedBytes = Base64.getDecoder().decode(base64Content.toString());
+
+            try (OutputStream out = new FileOutputStream(rutaDestino + "/adjunto_" + numMensaje + ".pdf")) {
+                out.write(decodedBytes);
+            }
+            System.out.println("Archivo adjunto guardado en: " + rutaDestino + "/adjunto_" + numMensaje + ".pdf");
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -3,6 +3,7 @@ package edu.ucam;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
+@SuppressWarnings("serial")
 public class IMAPServiceImpl extends UnicastRemoteObject implements IMAPService {
 
     private ServidorIMAP servidorIMAP;
@@ -37,5 +38,30 @@ public class IMAPServiceImpl extends UnicastRemoteObject implements IMAPService 
         } else {
             throw new RemoteException("Error al configurar el servidor IMAP: Configuración no encontrada.");
         }
+    }
+
+    @Override
+    public void crearCarpeta(String nombreCarpeta) throws RemoteException {
+        servidorIMAP.crearCarpeta(nombreCarpeta);
+    }
+
+    @Override
+    public void eliminarCarpeta(String nombreCarpeta) throws RemoteException {
+        servidorIMAP.eliminarCarpeta(nombreCarpeta);
+    }
+
+    @Override
+    public void listarCorreosCarpeta(String nombreCarpeta) throws RemoteException {
+        servidorIMAP.listarCorreosCarpeta(nombreCarpeta);
+    }
+
+    @Override
+    public void moverMensaje(String origenCarpeta, String destinoCarpeta, int numMensaje) throws RemoteException {
+        servidorIMAP.moverMensaje(origenCarpeta, destinoCarpeta, numMensaje);
+    }
+
+    @Override
+    public void descargarAdjuntosPDF(int numMensaje, String rutaDestino) throws RemoteException {
+        servidorIMAP.descargarAdjuntosPDF(numMensaje, rutaDestino);
     }
 }

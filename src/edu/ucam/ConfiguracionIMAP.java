@@ -11,7 +11,6 @@ public class ConfiguracionIMAP {
     }
 
     public void configurarServidorIMAP(String usuarioIMAP, String contraseñaIMAP) {
-        String servidorIMAP = "imap.gmail.com";
         int puertoIMAP = 993;
         configuracionesIMAP.put("configuracionPrincipal", new String[]{usuarioIMAP, String.valueOf(puertoIMAP), contraseñaIMAP});
     }
