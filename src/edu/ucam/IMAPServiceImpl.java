@@ -62,6 +62,6 @@ public class IMAPServiceImpl extends UnicastRemoteObject implements IMAPService 
 
     @Override
     public void descargarAdjuntosPDF(int numMensaje, String rutaDestino) throws RemoteException {
-        servidorIMAP.descargarAdjuntosPDF(numMensaje, rutaDestino);
+        servidorIMAP.descargarAdjuntos(numMensaje, rutaDestino);
     }
 }
